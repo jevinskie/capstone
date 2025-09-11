@@ -63,4 +63,8 @@ void PPC_setup_op(cs_ppc_op *op);
 void PPC_check_updates_cr0(MCInst *MI);
 void PPC_set_instr_map_data(MCInst *MI, const uint8_t *Bytes, size_t BytesLen);
 
+void PPC_reg_access(const cs_insn *insn, cs_regs regs_read,
+			uint8_t *regs_read_count, cs_regs regs_write,
+			uint8_t *regs_write_count);
+
 #endif

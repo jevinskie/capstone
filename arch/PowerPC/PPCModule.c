@@ -24,6 +24,9 @@ cs_err PPC_global_init(cs_struct *ud)
 	ud->insn_id = PPC_get_insn_id;
 	ud->insn_name = PPC_insn_name;
 	ud->group_name = PPC_group_name;
+#ifndef CAPSTONE_DIET
+	ud->reg_access = PPC_reg_access;
+#endif
 
 	return CS_ERR_OK;
 }

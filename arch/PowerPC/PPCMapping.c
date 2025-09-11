@@ -783,3 +783,53 @@ void PPC_insert_detail_op_imm_at(MCInst *MI, unsigned index, int64_t Val,
 }
 
 #endif
+
+#ifndef CAPSTONE_DIET
+void PPC_reg_access(const cs_insn *insn, cs_regs regs_read,
+			  uint8_t *regs_read_count, cs_regs regs_write,
+			  uint8_t *regs_write_count)
+{
+	uint8_t i;
+	uint8_t read_count, write_count;
+	cs_ppc *ppc = &(insn->detail->ppc);
+
+	read_count = insn->detail->regs_read_count;
+	write_count = insn->detail->regs_write_count;
+
+	// implicit registers
+	memcpy(regs_read, insn->detail->regs_read,
+	       read_count * sizeof(insn->detail->regs_read[0]));
+	memcpy(regs_write, insn->detail->regs_write,
+	       write_count * sizeof(insn->detail->regs_write[0]));
+
+	// explicit registers
+	for (i = 0; i < ppc->op_count; i++) {
+		cs_ppc_op *op = &(ppc->operands[i]);
+		switch ((int)op->type) {
+		case PPC_OP_REG:
+			if ((op->access & CS_AC_READ) &&
+			    !arr_exist(regs_read, read_count, op->reg)) {
+				regs_read[read_count] = (uint16_t)op->reg;
+				read_count++;
+			}
+			if ((op->access & CS_AC_WRITE) &&
+			    !arr_exist(regs_write, write_count, op->reg)) {
+				regs_write[write_count] = (uint16_t)op->reg;
+				write_count++;
+			}
+			break;
+		case PPC_OP_MEM:
+			if (!arr_exist(regs_read, read_count, op->reg)) {
+				regs_read[read_count] = (uint16_t)op->reg;
+				read_count++;
+			}
+			break;
+		default:
+			break;
+		}
+	}
+
+	*regs_read_count = read_count;
+	*regs_write_count = write_count;
+}
+#endif
