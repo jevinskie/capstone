@@ -785,6 +785,11 @@ void PPC_insert_detail_op_imm_at(MCInst *MI, unsigned index, int64_t Val,
 #endif
 
 #ifndef CAPSTONE_DIET
+static bool is_ldst_with_update(int ins)
+{
+    return (ins == PPC_INS_STDU) || (ins == PPC_INS_LDU);
+}
+
 void PPC_reg_access(const cs_insn *insn, cs_regs regs_read,
 			  uint8_t *regs_read_count, cs_regs regs_write,
 			  uint8_t *regs_write_count)
@@ -823,6 +828,12 @@ void PPC_reg_access(const cs_insn *insn, cs_regs regs_read,
 				regs_read[read_count] = (uint16_t)op->reg;
 				read_count++;
 			}
+           if (is_ldst_with_update(insn->id)) {
+           			    if (!arr_exist(regs_write, write_count, op->reg)) {
+				regs_write[write_count] = (uint16_t)op->reg;
+				write_count++;
+}
+           }
 			break;
 		default:
 			break;
